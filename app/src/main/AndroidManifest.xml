@@ -9,6 +9,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.HMSCoreGameService">
+
+        <!--    Prompt users to download HMS Core in the background if it not exist (AppGallery allow background downloading) (PlayStore hasn't this feature) -->
+        <meta-data
+            android:name="com.huawei.hms.client.channel.androidMarket"
+            android:value="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
