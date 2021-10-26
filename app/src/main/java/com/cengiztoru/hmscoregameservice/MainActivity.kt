@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(mBinding.root)
 
         setListeners()
-//        initGameServiceSdk()      // Must be called upon app launch, rather than during user operations such as sign-in and payment.
+        initGameServiceSdk()      // Must be called upon app launch, rather than during user operations such as sign-in and payment.
     }
 
 //region SERVICE INITIALIZATION
@@ -45,8 +45,12 @@ class MainActivity : AppCompatActivity() {
         val initTask: Task<Void> = appsClient.init(AppParams(params) {
             // Implement the game addiction prevention function, such as saving games and calling the account sign-out API.
         })
-        initTask.addOnSuccessListener { printLog("init success") }
-            .addOnFailureListener { e -> printLog("init failed, " + e.message) }
+        initTask.addOnSuccessListener {
+            printLog("init success")
+            signIn()
+        }.addOnFailureListener { e ->
+            printLog("init failed, " + e.message)
+        }
     }
 
 //endregion
@@ -71,11 +75,11 @@ class MainActivity : AppCompatActivity() {
                         val signInResult = HuaweiIdAuthResult().fromJson(jsonSignInResult)
                         if (signInResult.status.statusCode == 0) {
                             printLog("SignIn Sucess \nDisplay Name ${signInResult.toJson()}")
-                            //todo getUserInfo
+                            getCurrentPlayerInfo()
                         } else {
                             printLog("SignIn Failed \nStatus Code : ${signInResult.status.statusCode}}")
                         }
-                    } catch (var7: JSONException) {
+                    } catch (jsonException: JSONException) {
                         printLog("Failed to convert json from signInResult.")
                     }
 
@@ -93,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         HuaweiIdAuthManager.getService(this, getHuaweiIdParams()).silentSignIn()
             .addOnSuccessListener { authHuaweiId ->
                 printLog("SilentSignIn success \nDisplayName: ${authHuaweiId.displayName}")
-                //todo getUserInfo
+                getCurrentPlayerInfo()
             }.addOnFailureListener { e ->
                 if (e is ApiException) {
                     printLog("SilentsignIn failed. Normal signin starting")
@@ -122,7 +126,9 @@ class MainActivity : AppCompatActivity() {
         val playersClient = Games.getPlayersClient(this)
         val playerTask: Task<Player> = playersClient.currentPlayer
         playerTask.addOnSuccessListener { player ->
-            printLog("Obtained Player Info \n ID: ${player.playerId} \nLevel: ${player.level}")
+
+        printLog("Obtained Player Info \n ID: ${player.playerId} \nLevel: ${player.level}")
+
         }.addOnFailureListener { e -> //  Failed to obtain player information.
             if (e is ApiException) {
 
