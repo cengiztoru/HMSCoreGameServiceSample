@@ -10,6 +10,8 @@ import com.huawei.hmf.tasks.Task
 import com.huawei.hms.common.ApiException
 import com.huawei.hms.jos.AppParams
 import com.huawei.hms.jos.JosApps
+import com.huawei.hms.jos.games.Games
+import com.huawei.hms.jos.games.player.Player
 import com.huawei.hms.support.account.request.AccountAuthParams
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
@@ -113,6 +115,27 @@ class MainActivity : AppCompatActivity() {
 //endregion
 
 
+//region OBTAIN CURRENT USER INFO
+
+    private fun getCurrentPlayerInfo() {
+
+        val playersClient = Games.getPlayersClient(this)
+        val playerTask: Task<Player> = playersClient.currentPlayer
+        playerTask.addOnSuccessListener { player ->
+            printLog("Obtained Player Info \n ID: ${player.playerId} \nLevel: ${player.level}")
+        }.addOnFailureListener { e -> //  Failed to obtain player information.
+            if (e is ApiException) {
+
+                printLog("Obtaining player info failed code : ${e.statusCode} message : ${e.localizedMessage}")
+
+            }
+        }
+
+    }
+
+//endregion
+
+
     private fun setListeners() {
         //this is just for sample. You should call initialization when app launched
         mBinding.btnInit.setOnClickListener {
@@ -121,6 +144,10 @@ class MainActivity : AppCompatActivity() {
 
         mBinding.btnSignin.setOnClickListener {
             signIn()
+        }
+
+        mBinding.btnCurrentPlayer.setOnClickListener {
+            getCurrentPlayerInfo()
         }
     }
 

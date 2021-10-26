@@ -24,7 +24,7 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_current_player"
         style="@style/ButtonStyle"
-        android:text="Get Currenct Player" />
+        android:text="Get Current Player" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_begin_player_event"
