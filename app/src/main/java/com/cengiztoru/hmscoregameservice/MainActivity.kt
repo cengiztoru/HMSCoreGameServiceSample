@@ -1,13 +1,21 @@
 package com.cengiztoru.hmscoregameservice
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.cengiztoru.hmscoregameservice.databinding.ActivityMainBinding
 import com.huawei.hmf.tasks.Task
+import com.huawei.hms.common.ApiException
 import com.huawei.hms.jos.AppParams
 import com.huawei.hms.jos.JosApps
 import com.huawei.hms.support.account.request.AccountAuthParams
+import com.huawei.hms.support.hwid.HuaweiIdAuthManager
+import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
+import com.huawei.hms.support.hwid.request.HuaweiIdAuthParamsHelper
+import com.huawei.hms.support.hwid.result.HuaweiIdAuthResult
+import org.json.JSONException
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +35,7 @@ class MainActivity : AppCompatActivity() {
 //        initGameServiceSdk()      // Must be called upon app launch, rather than during user operations such as sign-in and payment.
     }
 
+//region SERVICE INITIALIZATION
 
     private fun initGameServiceSdk() {
         val params = AccountAuthParams.DEFAULT_AUTH_REQUEST_PARAM_GAME
@@ -38,11 +47,80 @@ class MainActivity : AppCompatActivity() {
             .addOnFailureListener { e -> printLog("init failed, " + e.message) }
     }
 
+//endregion
+
+//region SIGN IN WITH HUAWEI ID
+
+    // SignIn Explicitly
+    private val singInResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+
+                result.data?.run {
+
+                    val jsonSignInResult = result.data?.getStringExtra("HUAWEIID_SIGNIN_RESULT")
+
+                    if (jsonSignInResult.isNullOrBlank()) {
+                        printLog("SingIn result empty.")
+                        return@registerForActivityResult
+                    }
+
+                    try {
+                        val signInResult = HuaweiIdAuthResult().fromJson(jsonSignInResult)
+                        if (signInResult.status.statusCode == 0) {
+                            printLog("SignIn Sucess \nDisplay Name ${signInResult.toJson()}")
+                            //todo getUserInfo
+                        } else {
+                            printLog("SignIn Failed \nStatus Code : ${signInResult.status.statusCode}}")
+                        }
+                    } catch (var7: JSONException) {
+                        printLog("Failed to convert json from signInResult.")
+                    }
+
+                } ?: run {
+                    printLog("SignIn intent is null")
+                    return@registerForActivityResult
+                }
+
+            }
+        }
+
+    private fun signIn() {
+
+        //Try to Silent Sign In
+        HuaweiIdAuthManager.getService(this, getHuaweiIdParams()).silentSignIn()
+            .addOnSuccessListener { authHuaweiId ->
+                printLog("SilentSignIn success \nDisplayName: ${authHuaweiId.displayName}")
+                //todo getUserInfo
+            }.addOnFailureListener { e ->
+                if (e is ApiException) {
+                    printLog("SilentsignIn failed. Normal signin starting")
+//              Sign in explicitly. The sign-in result is obtained in onActivityResult.
+                    val service =
+                        HuaweiIdAuthManager.getService(this@MainActivity, getHuaweiIdParams())
+                    singInResultLauncher.launch(service?.signInIntent)
+                }
+            }
+
+    }
+
+    private fun getHuaweiIdParams(): HuaweiIdAuthParams? {
+        return HuaweiIdAuthParamsHelper(HuaweiIdAuthParams.DEFAULT_AUTH_REQUEST_PARAM_GAME).setIdToken()
+            .createParams()
+    }
+
+
+//endregion
+
 
     private fun setListeners() {
         //this is just for sample. You should call initialization when app launched
         mBinding.btnInit.setOnClickListener {
             initGameServiceSdk()
+        }
+
+        mBinding.btnSignin.setOnClickListener {
+            signIn()
         }
     }
 
