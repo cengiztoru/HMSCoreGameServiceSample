@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.cengiztoru.hmscoregameservice.databinding.ActivityMainBinding
+import com.huawei.hmf.tasks.OnSuccessListener
 import com.huawei.hmf.tasks.Task
 import com.huawei.hms.common.ApiException
 import com.huawei.hms.jos.AppParams
@@ -127,7 +128,8 @@ class MainActivity : AppCompatActivity() {
         val playerTask: Task<Player> = playersClient.currentPlayer
         playerTask.addOnSuccessListener { player ->
 
-        printLog("Obtained Player Info \n ID: ${player.playerId} \nLevel: ${player.level}")
+            printLog("Obtained Player Info \n ID: ${player.playerId} \nLevel: ${player.level}")
+            getAchievementList()
 
         }.addOnFailureListener { e -> //  Failed to obtain player information.
             if (e is ApiException) {
@@ -137,6 +139,43 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+//endregion
+
+//region ACHIEVEMENTS
+
+    private fun getAchievementList() {
+        val client = Games.getAchievementsClient(this)
+        // Obtain the achievement list.
+        val task = client.getAchievementList(true)
+        task.addOnSuccessListener(OnSuccessListener { data ->
+
+            if (data == null) {
+                printLog("Achievement list is null")
+                return@OnSuccessListener
+            }
+
+            data.forEach { achievement ->
+                printLog("achievement id" + achievement.id)
+            }
+
+        }).addOnFailureListener { e ->
+            if (e is ApiException) {
+                val message = when (e.statusCode) {
+                    7201 -> {
+                        "The achievement not found. Please configure achievements on AppGallery"
+                    }
+                    7218 -> {
+                        "PLEASE ENABLE GAME SERVICE via  Me > Settings > Game Services on AppGallery"
+                    }
+                    else -> {
+                        "getAchievementList failed statusCode : ${e.statusCode}"
+                    }
+                }
+                printLog(message)
+            }
+        }
     }
 
 //endregion
@@ -154,6 +193,10 @@ class MainActivity : AppCompatActivity() {
 
         mBinding.btnCurrentPlayer.setOnClickListener {
             getCurrentPlayerInfo()
+        }
+
+        mBinding.btnGetAchievementList.setOnClickListener {
+            getAchievementList()
         }
     }
 

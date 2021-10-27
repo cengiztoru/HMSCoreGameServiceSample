@@ -41,6 +41,11 @@
         style="@style/ButtonStyle"
         android:text="Get Player Extra Info" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_get_achievement_list"
+        style="@style/ButtonStyle"
+        android:text="GET ACHIEVEMENT LIST" />
+
     <com.cengiztoru.hmscoregameservice.custom_view.LoggerTextView
         android:id="@+id/tv_logger"
         android:layout_width="match_parent"
