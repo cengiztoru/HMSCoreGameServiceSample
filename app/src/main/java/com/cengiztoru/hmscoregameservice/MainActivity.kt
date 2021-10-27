@@ -103,6 +103,10 @@ class MainActivity : AppCompatActivity() {
             .addOnSuccessListener { authHuaweiId ->
                 printLog("SilentSignIn success \nDisplayName: ${authHuaweiId.displayName}")
                 getCurrentPlayerInfo()
+                eventsClient.grow(
+                    "990EC9FB259E4FCE3319C198635132D3C2BB68D3C7DA1A2AC8FDD43D83CBDEAF",
+                    1
+                )
             }.addOnFailureListener { e ->
                 if (e is ApiException) {
                     printLog("SilentsignIn failed. Normal signin starting")
@@ -247,6 +251,10 @@ class MainActivity : AppCompatActivity() {
             }.addOnFailureListener { e ->
                 if (e is ApiException) {
                     if (e.statusCode == 7203) {
+                        eventsClient.grow(
+                            "B1A320798CB1CFD7FAC3F2C421FE87E6C713948382E6BF631276CDE7B7BC7FFE",
+                            1
+                        )
                         printLog("Already, you reached first achievement. Congratulations!")
                         return@addOnFailureListener
                     }
