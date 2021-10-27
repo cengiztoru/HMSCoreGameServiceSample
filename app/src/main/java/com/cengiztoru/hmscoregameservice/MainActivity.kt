@@ -1,6 +1,7 @@
 package com.cengiztoru.hmscoregameservice
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
@@ -161,9 +162,10 @@ class MainActivity : AppCompatActivity() {
             data.forEachIndexed { index, achievement ->
                 achievements += "${achievement.displayName}" + if (index != data.lastIndex) ",  " else ""
             }
+            //you obtained all achievements now you can show them manually or via app assistant
 
             printLog("${data.size} achievement found : $achievements")
-
+            showAchievementListByAppAssistant()
 
         }).addOnFailureListener { e ->
             if (e is ApiException) {
@@ -188,6 +190,39 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var showAchievements =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                printLog("ACHIEVEMENTS SHOWED. RETURNING TO THIS ACTVITY STARTED")
+            }
+        }
+
+    private fun showAchievementListByAppAssistant() {
+        val client = Games.getAchievementsClient(this)
+        val task: Task<Intent> = client.showAchievementListIntent
+        task.addOnSuccessListener { intent ->
+
+            intent?.let {
+                showAchievements.launch(it)
+            } ?: run {
+                //you can show the achievement list manually
+            }
+
+        }.addOnFailureListener { e ->
+            if (e is ApiException) {
+                // If result code 7204 is returned, HUAWEI AppAssistant is not available for displaying the achievement list page, and then the SDK will display a message indicating a service access failure. In this case, you can ignore the result code.
+                if (e.statusCode == 7204) {
+                    printLog("AppAssistant does not support the display of achievements interface for some reason. You can ignore the error code")
+                    return@addOnFailureListener
+                }
+
+                //you can show the achievement list manually
+
+                printLog("SHOW ACHIEVEMENT LIST FAILED.  Code: ${e.statusCode} Message: ${e.localizedMessage}")
+
+            }
+        }
+    }
 //endregion
 
 
@@ -205,7 +240,7 @@ class MainActivity : AppCompatActivity() {
             getCurrentPlayerInfo()
         }
 
-        mBinding.btnGetAchievementList.setOnClickListener {
+        mBinding.btnShowAchievements.setOnClickListener {
             getAchievementList()
         }
     }

@@ -27,24 +27,14 @@
         android:text="Get Current Player" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_begin_player_event"
-        style="@style/ButtonStyle"
-        android:text="Submit Event Player begin" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_end_player_event"
-        style="@style/ButtonStyle"
-        android:text="Submit Event Player END" />
-
-    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_player_extra_info"
         style="@style/ButtonStyle"
         android:text="Get Player Extra Info" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_get_achievement_list"
+        android:id="@+id/btn_show_achievements"
         style="@style/ButtonStyle"
-        android:text="GET ACHIEVEMENT LIST" />
+        android:text="GET and SHOW ACHIEVEMENTS" />
 
     <com.cengiztoru.hmscoregameservice.custom_view.LoggerTextView
         android:id="@+id/tv_logger"
