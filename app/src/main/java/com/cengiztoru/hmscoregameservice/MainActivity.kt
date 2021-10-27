@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
 //region SERVICE INITIALIZATION
 
     private fun initGameServiceSdk() {
+        printLog("Game Service Initializatition started")
         val params = AccountAuthParams.DEFAULT_AUTH_REQUEST_PARAM_GAME
         val appsClient = JosApps.getJosAppsClient(this)
         val initTask: Task<Void> = appsClient.init(AppParams(params) {
@@ -156,13 +157,22 @@ class MainActivity : AppCompatActivity() {
                 return@OnSuccessListener
             }
 
-            data.forEach { achievement ->
-                printLog("achievement id" + achievement.id)
+            var achievements = ""
+            data.forEachIndexed { index, achievement ->
+                achievements += "${achievement.displayName}" + if (index != data.lastIndex) ",  " else ""
             }
+
+            printLog("${data.size} achievement found : $achievements")
+
 
         }).addOnFailureListener { e ->
             if (e is ApiException) {
                 val message = when (e.statusCode) {
+                    7018 -> {
+                        initGameServiceSdk()
+                        "PLEASE CALL SDK INIT FUNCTION FIRSTLY"
+                    }
+
                     7201 -> {
                         "The achievement not found. Please configure achievements on AppGallery"
                     }
