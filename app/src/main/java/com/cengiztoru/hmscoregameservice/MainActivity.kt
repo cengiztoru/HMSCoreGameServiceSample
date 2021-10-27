@@ -13,6 +13,7 @@ import com.huawei.hms.common.ApiException
 import com.huawei.hms.jos.AppParams
 import com.huawei.hms.jos.JosApps
 import com.huawei.hms.jos.games.Games
+import com.huawei.hms.jos.games.achievement.Achievement
 import com.huawei.hms.jos.games.player.Player
 import com.huawei.hms.support.account.request.AccountAuthParams
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
@@ -25,7 +26,7 @@ import org.json.JSONException
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        private val TAG = "MainActivityTAG"
+        private const val TAG = "MainActivityTAG"
     }
 
     private lateinit var mBinding: ActivityMainBinding
@@ -147,22 +148,31 @@ class MainActivity : AppCompatActivity() {
 
 //region ACHIEVEMENTS
 
+    private val achievementsClient by lazy {
+        Games.getAchievementsClient(this)
+    }
+
+    private var achievements: List<Achievement>? = null
+
     private fun getAchievementList() {
-        val client = Games.getAchievementsClient(this)
         // Obtain the achievement list.
-        val task = client.getAchievementList(true)
+        val task = achievementsClient.getAchievementList(true)
         task.addOnSuccessListener(OnSuccessListener { data ->
 
-            if (data == null) {
+
+            if (data == null || data.isEmpty()) {
                 printLog("Achievement list is null")
+                achievements = null
                 return@OnSuccessListener
             }
 
+            //you obtained all achievements now you can show them manually or via app assistant
+            achievements = data
+
             var achievements = ""
             data.forEachIndexed { index, achievement ->
-                achievements += "${achievement.displayName}" + if (index != data.lastIndex) ",  " else ""
+                achievements += achievement.displayName + if (index != data.lastIndex) ",  " else ""
             }
-            //you obtained all achievements now you can show them manually or via app assistant
 
             printLog("${data.size} achievement found : $achievements")
             showAchievementListByAppAssistant()
@@ -190,7 +200,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private var showAchievements =
+    private var showAchievementsLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 printLog("ACHIEVEMENTS SHOWED. RETURNING TO THIS ACTVITY STARTED")
@@ -198,12 +208,11 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun showAchievementListByAppAssistant() {
-        val client = Games.getAchievementsClient(this)
-        val task: Task<Intent> = client.showAchievementListIntent
+        val task: Task<Intent> = achievementsClient.showAchievementListIntent
         task.addOnSuccessListener { intent ->
 
             intent?.let {
-                showAchievements.launch(it)
+                showAchievementsLauncher.launch(it)
             } ?: run {
                 //you can show the achievement list manually
             }
@@ -223,6 +232,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun growFirstAchievement() {
+        achievements?.firstOrNull()?.apply {
+            val task: Task<Boolean> = achievementsClient.growWithResult(id, 1)
+            task.addOnSuccessListener { isSucess ->
+                if (isSucess) {
+                    showAchievementListByAppAssistant()
+                    printLog("growWithResult success")
+                } else {
+                    printLog("achievement can not grow")
+                }
+            }.addOnFailureListener { e ->
+                if (e is ApiException) {
+                    if (e.statusCode == 7203) {
+                        printLog("Already, you reached first achievement. Congratulations!")
+                        return@addOnFailureListener
+                    }
+                    printLog("growWithResult failure. Code:${e.statusCode} Message : ${e.localizedMessage}")
+                }
+            }
+        }
+    }
+
 //endregion
 
 
@@ -242,6 +274,10 @@ class MainActivity : AppCompatActivity() {
 
         mBinding.btnShowAchievements.setOnClickListener {
             getAchievementList()
+        }
+
+        mBinding.btnGrowFirstAchievement.setOnClickListener {
+            growFirstAchievement()
         }
     }
 

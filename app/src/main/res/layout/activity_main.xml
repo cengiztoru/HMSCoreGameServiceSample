@@ -36,6 +36,11 @@
         style="@style/ButtonStyle"
         android:text="GET and SHOW ACHIEVEMENTS" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_grow_first_achievement"
+        style="@style/ButtonStyle"
+        android:text="GROW FIRST ACHIEVEMENT" />
+
     <com.cengiztoru.hmscoregameservice.custom_view.LoggerTextView
         android:id="@+id/tv_logger"
         android:layout_width="match_parent"
