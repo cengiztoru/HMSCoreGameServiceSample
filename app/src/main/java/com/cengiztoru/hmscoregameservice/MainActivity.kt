@@ -14,6 +14,7 @@ import com.huawei.hms.jos.AppParams
 import com.huawei.hms.jos.JosApps
 import com.huawei.hms.jos.games.Games
 import com.huawei.hms.jos.games.achievement.Achievement
+import com.huawei.hms.jos.games.event.Event
 import com.huawei.hms.jos.games.player.Player
 import com.huawei.hms.support.account.request.AccountAuthParams
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
@@ -287,7 +288,30 @@ class MainActivity : AppCompatActivity() {
 
 //endregion
 
+//region EVENTS
 
+
+    private val eventsClient by lazy {
+        Games.getEventsClient(this)
+    }
+
+    private var events: List<Event>? = null
+
+    private fun getEvents() {
+        eventsClient.getEventList(true).addOnSuccessListener {
+            events = it
+            events?.forEach {
+                printLog("EventName : ${it.name}")
+            }
+        }.addOnFailureListener { exception ->
+            if (exception is ApiException) {
+                printLog("getEventList failured. Code:${exception.statusCode} Message: ${exception.localizedMessage}")
+            }
+        }
+    }
+
+
+    //endregion
     private fun setListeners() {
         //this is just for sample. You should call initialization when app launched
         mBinding.btnInit.setOnClickListener {
@@ -308,6 +332,10 @@ class MainActivity : AppCompatActivity() {
 
         mBinding.btnGrowFirstAchievement.setOnClickListener {
             growFirstAchievement()
+        }
+
+        mBinding.btnGetEvents.setOnClickListener {
+            getEvents()
         }
     }
 

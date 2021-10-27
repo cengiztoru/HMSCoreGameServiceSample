@@ -41,6 +41,11 @@
         style="@style/ButtonStyle"
         android:text="GROW FIRST ACHIEVEMENT" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_get_events"
+        style="@style/ButtonStyle"
+        android:text="GET EVENTS" />
+
     <com.cengiztoru.hmscoregameservice.custom_view.LoggerTextView
         android:id="@+id/tv_logger"
         android:layout_width="match_parent"
