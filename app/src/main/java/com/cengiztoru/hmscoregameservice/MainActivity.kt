@@ -255,6 +255,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //Set specific step to an achievement
+    private fun setStepOfAchievement(achievementId: String, specificStep: Int) {
+        achievementsClient.makeStepsWithResult(achievementId, specificStep)
+            .addOnSuccessListener { isSucess ->
+                if (isSucess) {
+                    printLog("make steps success")
+                } else {
+                    printLog("achievement can not makeSteps")
+                }
+            }.addOnFailureListener { e ->
+                if (e is ApiException) {
+                    val result = ("rtnCode:"
+                            + e.statusCode)
+                    printLog("make steps result:$result")
+                }
+            }
+    }
+
+    private fun reachAchievement(achievementId: String) {
+        achievementsClient.reachWithResult(achievementId)
+            .addOnSuccessListener { printLog("reach  success") }
+            .addOnFailureListener { e ->
+                if (e is ApiException) {
+                    val result = ("rtnCode:"
+                            + e.statusCode)
+                    printLog("reach result$result")
+                }
+            }
+    }
+
 //endregion
 
 
